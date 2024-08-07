@@ -5,8 +5,6 @@ const drone3 = drone('192.168.8.137', 8889);
 const drone2 = drone('192.168.8.120', 8889);
 const drone1 = drone('192.168.8.142', 8889);
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const execute = async (...commands) => {
   for (const command of commands) {
     await command();

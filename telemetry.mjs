@@ -22,11 +22,4 @@ aligner.on('message', async (msg) => {
     }, {});
 
   console.log(telemetrics.mid);
-
-  await sendCommand(
-    `go ${telemetrics.x * -1} ${telemetrics.y * -1} 100 50 m${telemetrics.mid}`
-  );
-
-  aligner.close();
-  resolve();
 });
