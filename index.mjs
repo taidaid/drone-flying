@@ -1,9 +1,11 @@
 import drone from './connect.mjs';
 // const drone = require('./connect.mjs');
 
-const drone2 = drone('192.168.8.137', 8889);
-const drone1 = drone('192.168.8.120', 8889);
-const drone3 = drone('192.168.8.142', 8889);
+const drone3 = drone('192.168.8.137', 8889);
+const drone2 = drone('192.168.8.120', 8889);
+const drone1 = drone('192.168.8.142', 8889);
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const execute = async (...commands) => {
   for (const command of commands) {
@@ -12,10 +14,14 @@ const execute = async (...commands) => {
   }
 };
 drone1.connect();
-execute(
+await execute(
   drone1.command.takeoff(),
-  // drone1.command.speed(75),
-  // drone1.command.go(0, 0, 30, 50, 2),
+  drone1.command.speed(50),
+  drone1.command.align(1),
+  drone1.command.forward(75),
+  drone1.command.align(2),
+  // drone1.command.detectMon(),
+
   // drone1.command.forward(250),
   // drone1.command.go(0, 0, 60, 50, 2),
   // drone1.command.backward(250),

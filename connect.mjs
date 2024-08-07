@@ -18,6 +18,8 @@ const drone = (address, port) => {
   };
   const sendCommand = (command) => {
     return new Promise((resolve, reject) => {
+      let resolved = false;
+
       console.log(`[${address}] SEND: ${command}`);
       server.once('message', (rawMsg) => {
         const message = rawMsg.toString().trim();
@@ -29,12 +31,22 @@ const drone = (address, port) => {
         }
       });
       server.send(command, port, address);
+
+      setTimeout(() => {
+        if (!resolved) {
+          console.log('TIMEOUT RESOLVE');
+          resolve();
+        }
+      }, 6000);
     });
   };
   const command = {
     takeoff: () => async () => {
       await sendCommand('command');
       return sendCommand('takeoff');
+    },
+    detectMon: () => async () => {
+      return sendCommand(`mon`);
     },
     left: (distance) => () => {
       return sendCommand(`left ${distance}`);
@@ -57,11 +69,11 @@ const drone = (address, port) => {
     go: (x, y, z, speed, padId) => () => {
       return sendCommand(`go ${x} ${y} ${z} ${speed} m${padId}`);
     },
-    align: () => () => {
+    align: (padId) => () => {
       return new Promise((resolve) => {
         const aligner = dgram.createSocket('udp4');
         aligner.bind(8890);
-        aligner.once('message', async (msg) => {
+        aligner.on('message', async (msg) => {
           const telemetrics = msg
             .toString()
             .trim()
@@ -70,13 +82,18 @@ const drone = (address, port) => {
               const [key, val] = cur.split(':');
               return { ...acc, [key]: val };
             }, {});
-          aligner.close();
-          await sendCommand(
-            `go ${telemetrics.x * -1} ${telemetrics.y * -1} 100 50 m${
-              telemetrics.mid
-            }`
-          );
-          resolve();
+
+          console.log(telemetrics.mid);
+          if (telemetrics.mid === padId) {
+            await sendCommand(
+              `go ${telemetrics.x * -1} ${telemetrics.y * -1} 100 50 m${
+                telemetrics.mid
+              }`
+            );
+
+            aligner.close();
+            resolve();
+          }
         });
       });
     },
